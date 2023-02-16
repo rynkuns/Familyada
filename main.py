@@ -11,6 +11,7 @@ from kivy.properties import (
 )
 
 import time
+import json
 
 
 class StandoffMushroom(Widget):
@@ -27,9 +28,15 @@ class StandoffMushroom(Widget):
 
 
 class Answer(BoxLayout):
-    number = BoundedNumericProperty(1, min=1, max=9)
+    number = BoundedNumericProperty(0, min=0, max=8)
     content = StringProperty("XXXXX")
     score = BoundedNumericProperty(1, min=1, max=99)
+
+    def __init__(self, **kwargs):
+        super(Answer, self).__init__(**kwargs)
+        self.number = kwargs['number']
+        self.content = kwargs['content']
+        self.score = kwargs['score']
 
 
 class GameRootWidget(FloatLayout):
@@ -37,8 +44,25 @@ class GameRootWidget(FloatLayout):
     team_red = ObjectProperty(None)
     team_blue = ObjectProperty(None)
     current_score = ObjectProperty(None)
+    answers_container = ObjectProperty(None)
 
-    standoff = True
+    standoff = False
+    turn = 0
+
+    def gamedata_from_json(self, file_path:str):
+        with open(file_path, 'r') as file:
+            self.gamedata = json.load(file)
+
+    def load_question(self):
+        answers = self.gamedata['questions'][self.turn]['answers']
+        for ans in answers:
+            self.answers_container.add_widget(Answer(
+                number= answers.index(ans),
+                content= ans[0],
+                score= ans[1]
+            ))
+
+
     
 
 
@@ -49,8 +73,13 @@ class GameRootWidget(FloatLayout):
 class FamilyadaApp(App):
 
     def build(self):
-        return GameRootWidget()
+        self.game_root_widget = GameRootWidget()
+        return self.game_root_widget
 
+    def on_start(self):
+        self.game_root_widget.gamedata_from_json('test.json')
+        self.game_root_widget.load_question()
+        return super().on_start()
 
 if __name__ == '__main__':
     FamilyadaApp().run()

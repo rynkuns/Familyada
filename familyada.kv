@@ -2,6 +2,7 @@
     team_red: team_red
     team_blue: team_blue
     current_score: current_score
+    answers_container: answers_container
 
     #:import Window kivy.core.window.Window
     #:set text_color [222/255, 222/255, 89/255] #'DEDE59'
@@ -24,17 +25,18 @@
             mipmap: True
 
         BoxLayout:
+            id: answers_container
             orientation: 'vertical'
-            spacing: 3
+            spacing: 2
             # size: 100, 100
-            size_hint: 0.5, 0.55
+            size_hint: 0.5, 0.6
 
-            Answer:
-            Answer:
-            Answer:       
-            Answer:
-            Answer:
-            Answer:
+            # Answer:
+            # Answer:
+            # Answer:       
+            # Answer:
+            # Answer:
+            # Answer:
 
     AnchorLayout:
         anchor_x: 'center'
@@ -110,16 +112,24 @@
                     cap: 'round'
                     joint: 'round'
 
+
 <Answer>:
     orientation: 'horizontal'
+    ### #:set answer_font_size min(Window.size)/30
 
     GameLabel:
-        size_hint: 0.1, 1
-        text: '1'
+        size_hint: None, 1
+        width: self.font_size*2
+        text: str(self.parent.number+1)
+        font_size: min(Window.size)/30
     GameLabel:
         size_hint: None, 1
-        text: 'XXXXXXXX'
+        text: self.parent.content
+        font_size: min(Window.size)/30
+        # font_size: self.height/3
     Widget:
+    # Content and score value connection #
+        size_hint: 1, 1
         canvas:
             Color:
                 rgb: text_color
@@ -129,8 +139,11 @@
                 dash_offset: 5
         
     GameLabel:
-        size_hint: 0.1, 1
-        text: '27'
+        size_hint: None, 1
+        # #:import randint random.randint
+        # text: str(randint(0,50))
+        text: str(self.parent.score)
+        font_size: min(Window.size)/30
 
 
 <GameLabel@Label>:
