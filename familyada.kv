@@ -4,7 +4,7 @@
     current_score: current_score
 
     #:import Window kivy.core.window.Window
-    #:set text_color 'DEDE59'
+    #:set text_color [222/255, 222/255, 89/255] #'DEDE59'
     #:set game_font 'familiada.ttf'
 
     canvas:
@@ -29,17 +29,12 @@
             # size: 100, 100
             size_hint: 0.5, 0.55
 
-            Label:
-                text: 'test test test'
-            Label:
-                text: 'test test test'
+            Answer:
+            Answer:
             Answer:       
-            Label:
-                text: 'test test test'
-            Label:
-                text: 'test test test'
-            Label:
-                text: 'test test test'
+            Answer:
+            Answer:
+            Answer:
 
     AnchorLayout:
         anchor_x: 'center'
@@ -94,6 +89,7 @@
 
     BoxLayout:
         orientation: 'horizontal'
+        spacing: 22
 
         StandoffMushroom:
             canvas:
@@ -117,20 +113,26 @@
 <Answer>:
     orientation: 'horizontal'
 
-    Label:
+    GameLabel:
         size_hint: 0.1, 1
-        text: '1.'
-        font_name: game_font
-    Label:
+        text: '1'
+    GameLabel:
         size_hint: None, 1
-        text: 'XXXXXXXXXXXXX'
-        font_name: game_font
-    Label:
-        size_hint: None, 1
-        text_size: self.width, self.font_size
-        text: '. . . . . . . . . . . . . . . . . . .'
-        font_name: game_font
-    Label:
+        text: 'XXXXXXXX'
+    Widget:
+        canvas:
+            Color:
+                rgb: text_color
+            Line:
+                points: [self.pos[0]+10,self.pos[1]+self.height/2-5, self.pos[0]+self.width-10,self.pos[1]+self.height/2-5]
+                dash_length: 4
+                dash_offset: 5
+        
+    GameLabel:
         size_hint: 0.1, 1
         text: '27'
-        font_name: game_font
+
+
+<GameLabel@Label>:
+    font_name: game_font
+    color: text_color

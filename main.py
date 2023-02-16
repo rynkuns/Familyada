@@ -1,5 +1,5 @@
 import kivy
-kivy.require('2.1.0') # replace with your current kivy version !
+kivy.require('2.1.0')
 
 from kivy.app import App
 from kivy.uix.widget import Widget
@@ -7,13 +7,15 @@ from kivy.uix.label import Label
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import (
-    NumericProperty, ReferenceListProperty, ObjectProperty
+    NumericProperty, ReferenceListProperty, ObjectProperty, OptionProperty, BoundedNumericProperty, StringProperty
 )
 
 import time
 
 
 class StandoffMushroom(Widget):
+
+    team = OptionProperty("None", options=["RED", "BLUE"])
 
     def on_touch_down(self, touch):
         if self.collide_point(touch.x, touch.y):
@@ -25,7 +27,9 @@ class StandoffMushroom(Widget):
 
 
 class Answer(BoxLayout):
-    pass
+    number = BoundedNumericProperty(1, min=1, max=9)
+    content = StringProperty("XXXXX")
+    score = BoundedNumericProperty(1, min=1, max=99)
 
 
 class GameRootWidget(FloatLayout):
