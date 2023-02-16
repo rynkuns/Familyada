@@ -1,0 +1,136 @@
+<GameRootWidget>:
+    team_red: team_red
+    team_blue: team_blue
+    current_score: current_score
+
+    #:import Window kivy.core.window.Window
+    #:set text_color 'DEDE59'
+    #:set game_font 'familiada.ttf'
+
+    canvas:
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: 'game_background.png'
+
+    AnchorLayout:
+        anchor_x: 'center'
+        anchor_y: 'center'
+        size_hint: 0.9, 0.9
+        pos_hint: {'x':.05, 'y':.05}
+
+        Image:
+            source: 'game_board.png'
+            mipmap: True
+
+        BoxLayout:
+            orientation: 'vertical'
+            spacing: 3
+            # size: 100, 100
+            size_hint: 0.5, 0.55
+
+            Label:
+                text: 'test test test'
+            Label:
+                text: 'test test test'
+            Answer:       
+            Label:
+                text: 'test test test'
+            Label:
+                text: 'test test test'
+            Label:
+                text: 'test test test'
+
+    AnchorLayout:
+        anchor_x: 'center'
+        anchor_y: 'top'
+        #:set current_score_size (0.18, 0.18)
+
+        Image:
+            source: 'current_score.png'
+            mipmap: True
+            # size: 100, 100
+            size_hint: current_score_size
+
+        Label:
+            id: current_score
+            text: '100'
+            size_hint: current_score_size
+            font_size: min(self.size) / 2.2
+            font_name: game_font
+            color: text_color
+
+
+    AnchorLayout:
+        anchor_x: 'left'
+        anchor_y: 'bottom'
+
+        Label:
+            id: team_red
+            text: 'RED'
+            size_hint: current_score_size
+            font_size: min(self.size) / 2.25
+            font_name: game_font
+            color: text_color
+
+    AnchorLayout:
+        anchor_x: 'right'
+        anchor_y: 'bottom'
+
+        Image:
+            source: 'right_score.png'
+            mipmap: True
+            size_hint: current_score_size
+            # texture: self.texture.flip_horizontal()
+
+        Label:
+            id: team_blue
+            text: 'BLU'
+            size_hint: current_score_size
+            font_size: min(self.size) / 2.25
+            font_name: game_font
+            color: text_color
+
+
+    BoxLayout:
+        orientation: 'horizontal'
+
+        StandoffMushroom:
+            canvas:
+                Color:
+                    rgba: [0.6, 0.2, 0.3, 0.88]
+                Line:
+                    points: [Window.size[0]/2-20,Window.size[1]-10, 10,Window.size[1]-10, 10,10, Window.size[0]/2-20,10]
+                    width: 5
+                    cap: 'round'
+                    joint: 'round'
+        StandoffMushroom:
+            canvas:
+                Color:
+                    rgba: [0.3, 0.2, 0.6, 0.88]
+                Line:
+                    points: [Window.size[0]/2+20,Window.size[1]-10, Window.size[0]-10,Window.size[1]-10, Window.size[0]-10,10, Window.size[0]/2+20,10]
+                    width: 5
+                    cap: 'round'
+                    joint: 'round'
+
+<Answer>:
+    orientation: 'horizontal'
+
+    Label:
+        size_hint: 0.1, 1
+        text: '1.'
+        font_name: game_font
+    Label:
+        size_hint: None, 1
+        text: 'XXXXXXXXXXXXX'
+        font_name: game_font
+    Label:
+        size_hint: None, 1
+        text_size: self.width, self.font_size
+        text: '. . . . . . . . . . . . . . . . . . .'
+        font_name: game_font
+    Label:
+        size_hint: 0.1, 1
+        text: '27'
+        font_name: game_font
