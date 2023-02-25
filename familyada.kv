@@ -3,6 +3,8 @@
     team_blue: team_blue
     current_score: current_score
     answers_container: answers_container
+    standoff_scene: standoff_scene
+    
 
     #:import Window kivy.core.window.Window
     #:set text_color [222/255, 222/255, 89/255] #'DEDE59'
@@ -17,26 +19,31 @@
     AnchorLayout:
         anchor_x: 'center'
         anchor_y: 'center'
-        size_hint: 0.9, 0.9
+        size_hint: 0.92, 0.92
         pos_hint: {'x':.05, 'y':.05}
 
         Image:
+            id: game_board
             source: 'game_board.png'
             mipmap: True
+            # allow_stretch: True
+            # keep_ratio: False
 
         BoxLayout:
             id: answers_container
             orientation: 'vertical'
             spacing: 2
             # size: 100, 100
-            size_hint: 0.5, 0.6
+            # size_hint: 0.5, 0.6
+            # pos: self.parent.pos
+            # size: self.board.norm_image_size
 
-            # Answer:
-            # Answer:
-            # Answer:       
-            # Answer:
-            # Answer:
-            # Answer:
+                # Answer:
+                # Answer:
+                # Answer:       
+                # Answer:
+                # Answer:
+                # Answer:
 
     AnchorLayout:
         anchor_x: 'center'
@@ -89,11 +96,28 @@
             color: text_color
 
 
+    AnchorLayout:
+        anchor_x: 'right'
+        anchor_y: 'center'
+        size: game_board.norm_image_size
+        # size: 100,100
+
+        MistakesPanel:
+
+            # canvas:
+            #     Rectangle:
+            #         pos: self.pos
+            #         size: self.size
+            #         source: 'game_background.png'
+
+
     BoxLayout:
         orientation: 'horizontal'
         spacing: 22
+        id: standoff_scene
 
         StandoffMushroom:
+            team: 'RED'
             canvas:
                 Color:
                     rgba: [0.6, 0.2, 0.3, 0.88]
@@ -103,6 +127,7 @@
                     cap: 'round'
                     joint: 'round'
         StandoffMushroom:
+            team:'BLUE'
             canvas:
                 Color:
                     rgba: [0.3, 0.2, 0.6, 0.88]
@@ -120,11 +145,16 @@
     GameLabel:
         size_hint: None, 1
         width: self.font_size*2
-        text: str(self.parent.number+1)
+        text: str(self.parent.number)
         font_size: min(Window.size)/30
     GameLabel:
+        id: answer_content
         size_hint: None, 1
-        text: self.parent.content
+        # text_size: 1,1
+        # text_size: None, None
+        width: self.texture_size[0]
+        # text: self.parent.content
+        text: ''
         font_size: min(Window.size)/30
         # font_size: self.height/3
     Widget:
@@ -142,10 +172,45 @@
         size_hint: None, 1
         # #:import randint random.randint
         # text: str(randint(0,50))
-        text: str(self.parent.score)
+        # text: str(self.parent.score)
+        text: '_'
         font_size: min(Window.size)/30
 
 
 <GameLabel@Label>:
     font_name: game_font
     color: text_color
+
+
+<MistakesPanel>:
+    small_mistakes: small_mistakes_container
+    large_mistake: large_mistake_container
+
+    # size_hint: 0.20, 0.45
+    size: 100,100
+
+    BoxLayout:
+        id: small_mistakes_container
+        orientation: 'vertical'
+        size: self.parent.size
+        pos: self.parent.pos
+
+        MistakeImage:
+
+        MistakeImage:
+
+        MistakeImage:
+
+    AnchorLayout:
+        id: large_mistake_container
+        anchor_x: 'center'
+        anchor_y: 'center'
+        size: self.parent.size
+        pos: self.parent.pos
+
+        MistakeImage:
+
+
+<MistakeImage@Image>:
+    mismap: True
+    source: 'mistake.png'
