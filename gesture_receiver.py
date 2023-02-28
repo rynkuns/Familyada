@@ -21,6 +21,8 @@ def simplegesture(name, point_list):
     return g
 
 class GestureReceiver(FloatLayout):
+
+    gesture_threshold = 0.9
     
     def __init__(self, root_widget=None, *args, **kwargs):
         super(GestureReceiver, self).__init__()
@@ -56,20 +58,25 @@ class GestureReceiver(FloatLayout):
                                        touch.ud['line'].points[1::2])))
 
         # print match scores between all known gestures
+        
         #MÓJ KOD!!!!!!
         scores = []
         for command in gest.gestures_dict:
             for gesture in gest.gestures_dict[command]:
-                # print(command, g.get_score(gesture))
                 scores.append((command, g.get_score(gesture)))
-        print(sorted(scores, key=operator.itemgetter(1), reverse=True)[:5])
+        scores = sorted(scores, key=operator.itemgetter(1), reverse=True)
+        print(scores[:4])
+
+        if self.root_widget is not "None":
+            if scores[0][1] > self.gesture_threshold:
+                self.root_widget.current_command = scores[0][0]
+                self.root_widget.next(scores[0][0])
+            else:
+                self.root_widget.current_command = "None"
                 
 
-        # erase the lines on the screen, this is a bit quick&dirty, since we
-        # can have another touch event on the way...
+        # erase the lines on the screen, this is a bit quick&dirty, since we can have another touch event on the way...
         self.canvas.clear()
-
-        # self.root_widget.current_command = 
 
 
 

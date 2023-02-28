@@ -7,18 +7,25 @@ from kivy.uix.label import Label
 from kivy.uix.layout import Layout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.relativelayout import RelativeLayout
+from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.properties import (
     NumericProperty, ReferenceListProperty, ObjectProperty, OptionProperty, BoundedNumericProperty, StringProperty
 )
+from kivy.clock import Clock
 
 import time
 import json
 
+from gesture_receiver import GestureReceiver
+
 NUMBERS= ["1", "2", "3", "4", "5", "5", "6", "7", "8", "9", "0"]
 TEAMS = ["R","B"]
 MISTAKES = ["X"]
-MISC = ["<"]
+MISC = ["<", "None"]
 ALL_SIGNS = NUMBERS + TEAMS + MISTAKES + MISC
+
+DUMMY_CALLBACK = lambda x: None
 
 class StandoffMushroom(Widget):
 
@@ -35,7 +42,7 @@ class StandoffMushroom(Widget):
 
 
 class Answer(BoxLayout):
-    number = BoundedNumericProperty(0, min=0, max=8)
+    number = BoundedNumericProperty(0, min=1, max=9)
     content = StringProperty("X X X X")
     score = BoundedNumericProperty(1, min=1, max=50)
 
@@ -51,21 +58,69 @@ class MistakesPanel(Widget):
     large_mistake = ObjectProperty(None)
 
 
-class GameRootWidget(FloatLayout):
+# class AnsweringController():
+#     mistakes = 0
 
-    global ALL_SIGNS, NUMBERS, TEAMS, MISTAKES, MISC
+#             #pętla zbieraj komendy i odpalaj mistake albo odpowieź
+#                 #gdy 3 mistake
+#                     # zmiana zespołu
+#                     #jedna próba
+#                 #gdy wszystko odgadnięte
+#                     # break
+#             #podsumowanie, podlicz punkty
+#             #pętla pokaż wyniki od końca zakryte
+
+
+class GameRootWidget(Screen):
+
+    global ALL_SIGNS, NUMBERS, TEAMS, MISTAKES, MISC, DUMMY_CALLBACK
     
     team_red = ObjectProperty(None)
     team_blue = ObjectProperty(None)
-    current_score = ObjectProperty(None)
+    current_score_widget = ObjectProperty(None)
     answers_container = ObjectProperty(None)
     standoff_scene = ObjectProperty(None)
 
+    current_score = 0
+    red_score = 0
+    blue_score = 0
     standoff = False
     turn = 0
     n_turns = 0
+    n_mistakes = 0
+    available_answers = []
     now_answering = OptionProperty("NO", options=["RED", "BLUE", "NO"])
-    current_command = OptionProperty(None, options=ALL_SIGNS+[None])
+    current_command = OptionProperty("None", options=ALL_SIGNS)
+    next = DUMMY_CALLBACK
+
+    def __init__(self, *args, **kwargs):
+        super(GameRootWidget, self).__init__()
+        self.add_widget(GestureReceiver(root_widget=self))
+        #TODO może jakoś ogólniej zainicjować niż prepare question
+        Clock.schedule_once(self.prepare_question)
+
+
+    def make_score(self, value: int):
+        self.current_score = value
+        self. current_score_widget.text = str(self.current_score)
+
+
+    def add_team_score(self, value: int, team: str):
+        if team == "RED":
+            self.red_score += value
+            self.team_red.text = str(self.red_score)
+        elif team == "BLUE":
+            self.blue_score += value
+            self.team_blue.text = str(self.blue_score)
+        else:
+            print("Unexpected team for add_team_score!")
+
+
+    def switch_now_answering(self):
+        print("switch_now_answering")
+        if self.now_answering == "RED": self.now_answering = "BLUE"
+        elif self.now_answering == "BLUE": self.now_answering = "RED"
+        else: print("Unexpected team switch!")
 
 
     def gamedata_from_json(self, file_path:str):
@@ -76,6 +131,8 @@ class GameRootWidget(FloatLayout):
 
     def load_question(self):
         answers = self.gamedata['questions'][self.turn]['answers']
+        self.available_answers = [str(x) for x in list( range(1,len(answers)+1) )]
+        print("available answers:", self.available_answers)
         self.answers_container.clear_widgets()
         for ans in answers:
             self.answers_container.add_widget(Answer(
@@ -86,66 +143,152 @@ class GameRootWidget(FloatLayout):
 
 
     def engage_standoff(self):
+        print("engage_standoff")
         self.standoff = True
         self.standoff_scene.opacity = 1.0
 
-    
-    def disengage_standoff(self, team:str):
-        self.standoff = False
-        self.standoff_scene.opacity = 0.0
-        ### GRAFICZNY CUE JAKIŚ TUTAJ!!!
-        print(team)
-        self.now_answering = team
+
+    # def receive_command(self, options=ALL_SIGNS):
+    #     self.current_command = "None"
+    #     print(options)
+    #     while True: #TODO tu jest zjebane
+    #         if self.current_command is not "None":
+    #             if self.current_command not in options:
+    #                 print("Unexpected command!")
+    #                 self.current_command = "None"
+    #             else:
+    #                 return self.current_command
 
 
-    def receive_command(self, options=ALL_SIGNS):
-        #TODO miej widget na cały ekran, który cał czas zbiera gesty i input z klawiatury
-        self.current_command = None
-        print(ALL_SIGNS)
-        while True:
-            if self.current_command is not None:
-                if self.current_command not in options:
-                    print("Unexpected command!")
-                    self.current_command = None
-                else:
-                    return self.current_command
-
-
-    def do_question(self):
+    def prepare_question(self, dt=None):
+        print("prepare_question")
         if self.turn < self.n_turns:
             self.now_answering = "NO"
             self.load_question()
             self.engage_standoff()
-            ### .....
-            ### od razu obsługuj odpowiedzi od zawodników
-            no_correct_answer = True
-            while no_correct_answer:
-                print('elo')
-
-                #weź komendę
-                #jeśli zła odpowiedź:
-                    # odpal mistake i zmień team
-                #jeśli dobra:
-                    # pokaż na planszy, zakończ tą pętlę
-            #weź komendę który team bierze pytanie
-            #wyzeruj mistakes
-            #pętla zbieraj komendy i odpalaj mistake albo odpowieź
-                #gdy 3 mistake
-                    # zmiana zespołu
-                    #jedna próba
-                #gdy wszystko odgadnięte
-                    # break
-            #podsumowanie, podlicz punkty
-            #pętla pokaż wyniki od końca zakryte
-
-                break
         else:
             print("No more questions left!")
-    
 
 
+    def disengage_standoff(self, team:str):
+        print("disengage_standoff")
+        self.standoff = False
+        self.standoff_scene.opacity = 0.0
+        #TODO GRAFICZNY CUE JAKIŚ TUTAJ!!!
+        print(team)
+        self.now_answering = team
+        self.next =  self.resolve_standoff
+        
+            # while no_correct_answer:
+            #     print('elo')
+            #     self.receive_command()
+            #     if self.current_command in NUMBERS:
+            #         #TODO odsłoń odpowiedź
+            #         no_correct_answer = False
+            #         #TODO wybierz team który przejmuje pytanie
+            #     elif self.current_command in MISTAKES:
+            #         #TODO odpal mistake po dobrej stronie
+            #         pass
+
+    def resolve_standoff(self, command):
+        print("resolve_standoff")
+        if command == "X":
+            self.play_big_mistake() #TODO odpal mistake po dobrej stronie!
+            self.switch_now_answering()
+        elif command in NUMBERS:
+            self.reveal_answer(command) #TODO pokaż odpowiedź command-1 na planszy
+            self.next = self.pick_team
+        else:
+            print("Unexpected command for resolve_standoff!")
 
 
+    def pick_team(self, command):
+        print("pick_team")
+        def act():
+            #TODO wyzeruj mistakes
+            self.next = self.make_standard_answer # zacznij odpytywać
+
+        if command == "R":
+            self.now_answering = "RED"
+            act()
+        elif command == "B":
+            self.now_answering = "BLUE"
+            act()
+        else:
+            print("Unexpected command for pick_team!")
+            
+
+    def make_standard_answer(self, command):
+        print("make_standard_answer")
+        if command in self.available_answers:
+            self.reveal_answer(command)
+        elif command == "X":
+            self.n_mistakes += 1
+            self.play_mistake() #TODO odpal mistake
+        ### Check whether to await another standard answer:
+        if self.n_mistakes == 3:
+            self.switch_now_answering()
+            self.next = self.make_final_answer # finalna odpoweidź
+        elif self.available_answers == []:
+            self.summarize_question()
+
+
+    def make_final_answer(self, command):
+        print("make_final_answer")
+        if command in self.available_answers:
+            self.reveal_answer(command)
+            Clock.schedule_once(self.summarize_question, 2)
+            # self.summarize_question() #TODO za kilka sekund
+        if command == "X":
+            self.play_big_mistake() #TODO odpal duży mistake
+            self.switch_now_answering()
+            # self.summarize_question() #TODO(zaplanuj na clock za kilka sekund)
+            Clock.schedule_once(self.summarize_question, 4)
+
+
+    def reveal_answer(self, number:str):
+        print("reveal_answer")
+        if number in self.available_answers:
+            for answer in self.answers_container.children:
+                if answer.number == int(number):
+                    answer.children[2].text = answer.content
+                    answer.children[0].text = str(answer.score) 
+                    new_score = self.current_score + answer.score
+                    self.make_score(new_score)
+                    self.available_answers.remove(number)
+                    #TODO play sound!
+                    return
+        print("Unexpected number for reveal_answer!")
+
+
+    def summarize_question(self):
+        pass
+        #TODO muzyczka
+        # #TODO podliczenie punktów
+        # teams = {"RED": self.red_score, "BLUE": self.blue_score}
+        # if self.now_answering == "RED":
+        #     self.red_score += self.current_score
+        # elif self.now_answering == "BLUE":
+        #     self.blue_score += self.current_score
+        self.add_team_score(self.current_score, self.now_answering)
+        self.current_score = 0
+        self.next = self.unsolved_answer
+
+
+    def play_big_mistake(self):
+        print("play_big_mistake")
+        #TODO
+
+
+    def play_mistake(self):
+        print("play_mistake")
+        #TODO
+
+
+    def unsolved_answer(self):
+        #TODO po jednym odkryj pozostałe odpowiedzi
+        print("unsolved_answer")
+        #TODO gdy wszystkie odkryte przekmiń następne pytanie
 
 
 class FamilyadaApp(App):
@@ -157,10 +300,12 @@ class FamilyadaApp(App):
         return self.game_root_widget
 
     def on_start(self):
-        ### TO JEST ŹLE, BO PRZED WCZYTANIEM EKRANU, PRZEROBIĆ NA PO WCZYTANIU EKRANU! #TODO
         self.game_root_widget.gamedata_from_json('test.json')
-        self.game_root_widget.do_question()
+        #TODO
+        ### TO JEST ŹLE, BO PRZED WCZYTANIEM EKRANU, PRZEROBIĆ NA PO WCZYTANIU EKRANU!
+        # self.game_root_widget.do_question()
         return super().on_start()
+
 
 if __name__ == '__main__':
     FamilyadaApp().run()
