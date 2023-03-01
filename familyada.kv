@@ -4,6 +4,8 @@
     current_score_widget: current_score_widget
     answers_container: answers_container
     standoff_scene: standoff_scene
+    red_mistakes: red_mistakes
+    blue_mistakes: blue_mistakes
     
 
     #:import Window kivy.core.window.Window
@@ -20,7 +22,7 @@
         anchor_x: 'center'
         anchor_y: 'center'
         size_hint: 0.92, 0.92
-        pos_hint: {'x':.05, 'y':.05}
+        pos_hint: {'x':.04, 'y':.04}
 
         Image:
             id: game_board
@@ -30,20 +32,31 @@
             # keep_ratio: False
 
         BoxLayout:
-            id: answers_container
-            orientation: 'vertical'
-            spacing: 2
-            # size: 100, 100
-            # size_hint: 0.5, 0.6
-            # pos: self.parent.pos
-            # size: self.board.norm_image_size
+            orientation: 'horizontal'
+            spacing: 10
+            size_hint: 0.64, 0.7
 
-                # Answer:
-                # Answer:
-                # Answer:       
-                # Answer:
-                # Answer:
-                # Answer:
+            MistakesPanel:
+                id: red_mistakes
+
+            BoxLayout:
+                id: answers_container
+                orientation: 'vertical'
+                spacing: 2
+                # size: 100, 100
+                # size_hint: 0.5, 0.6
+                # pos: self.parent.pos
+                # size: self.board.norm_image_size
+
+                    # Answer:
+                    # Answer:
+                    # Answer:       
+                    # Answer:
+                    # Answer:
+                    # Answer:
+
+            MistakesPanel:
+                id: blue_mistakes
 
     AnchorLayout:
         anchor_x: 'center'
@@ -102,7 +115,7 @@
         size: game_board.norm_image_size
         # size: 100,100
 
-        MistakesPanel:
+        # MistakesPanel:
 
             # canvas:
             #     Rectangle:
@@ -183,17 +196,16 @@
 
 
 <MistakesPanel>:
-    small_mistakes: small_mistakes_container
-    large_mistake: large_mistake_container
+    # small_mistakes: small_mistakes_container
+    # large_mistake: large_mistake_container
 
-    size_hint: 0.20, 0.45
-    anchor_x: 'right'
+    size_hint: 0.20, 1
+    anchor_x: 'center'
     anchor_y: 'center'
-    padding: 0, 0, 20, 0#[padding_left, padding_top, padding_right, padding_bottom]
+    # padding: 0, 0, 20, 0#[padding_left, padding_top, padding_right, padding_bottom]
 
     BoxLayout:
-        # size_hint: 0.1, 0.6
-        id: small_mistakes_container
+        # id: small_mistakes_container
         orientation: 'vertical'
         # size: self.parent.size
         # pos: self.parent.pos
@@ -205,7 +217,7 @@
         MistakeImage:
 
     AnchorLayout:
-        id: large_mistake_container
+        # id: large_mistake_container
         anchor_x: 'center'
         anchor_y: 'center'
         size: 300, 300
@@ -218,4 +230,5 @@
 <MistakeImage@Image>:
     mismap: True
     source: 'mistake.png'
+    opacity: 0.1
     size_hint: 1.0, 1.0

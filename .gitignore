@@ -2,3 +2,4 @@ image_projects/
 json_test.py
 test.json
 __pycache__/
+test_manual.json

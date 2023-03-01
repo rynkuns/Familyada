@@ -28,6 +28,7 @@ ALL_SIGNS = NUMBERS + TEAMS + MISTAKES + MISC
 
 DUMMY_CALLBACK = lambda x: None
 
+
 class StandoffMushroom(Widget):
 
     team = OptionProperty("None", options=["RED", "BLUE"])
@@ -42,6 +43,7 @@ class StandoffMushroom(Widget):
                 return True
 
 
+
 class Answer(BoxLayout):
     number = BoundedNumericProperty(0, min=1, max=9)
     content = StringProperty("X X X X")
@@ -54,22 +56,11 @@ class Answer(BoxLayout):
         self.score = kwargs['score']
 
 
+
 class MistakesPanel(AnchorLayout):
     small_mistakes = ObjectProperty(None)
     large_mistake = ObjectProperty(None)
 
-
-# class AnsweringController():
-#     mistakes = 0
-
-#             #pętla zbieraj komendy i odpalaj mistake albo odpowieź
-#                 #gdy 3 mistake
-#                     # zmiana zespołu
-#                     #jedna próba
-#                 #gdy wszystko odgadnięte
-#                     # break
-#             #podsumowanie, podlicz punkty
-#             #pętla pokaż wyniki od końca zakryte
 
 
 class GameRootWidget(Screen):
@@ -81,6 +72,8 @@ class GameRootWidget(Screen):
     current_score_widget = ObjectProperty(None)
     answers_container = ObjectProperty(None)
     standoff_scene = ObjectProperty(None)
+    red_mistakes= ObjectProperty(None)
+    blue_mistakes= ObjectProperty(None)
 
     current_score = 0
     red_score = 0
@@ -94,9 +87,11 @@ class GameRootWidget(Screen):
     current_command = OptionProperty("None", options=ALL_SIGNS)
     next = DUMMY_CALLBACK
 
+
     def __init__(self, *args, **kwargs):
         super(GameRootWidget, self).__init__()
         self.add_widget(GestureReceiver(root_widget=self))
+
         #TODO może jakoś ogólniej zainicjować niż prepare question
         Clock.schedule_once(self.prepare_question)
 
@@ -165,6 +160,7 @@ class GameRootWidget(Screen):
         print("prepare_question")
         if self.turn < self.n_turns:
             self.now_answering = "NO"
+            self.current_score = 0
             self.load_question()
             self.engage_standoff()
         else:
@@ -197,7 +193,7 @@ class GameRootWidget(Screen):
             self.play_big_mistake() #TODO odpal mistake po dobrej stronie!
             self.switch_now_answering()
         elif command in NUMBERS:
-            self.reveal_answer(command) #TODO pokaż odpowiedź command-1 na planszy
+            self.reveal_answer(command) 
             self.next = self.pick_team
         else:
             print("Unexpected command for resolve_standoff!")
@@ -206,7 +202,7 @@ class GameRootWidget(Screen):
     def pick_team(self, command):
         print("pick_team")
         def act():
-            #TODO wyzeruj mistakes
+            self.clear_mistakes("BOTH")
             self.next = self.make_standard_answer # zacznij odpytywać
 
         if command == "R":
@@ -247,15 +243,16 @@ class GameRootWidget(Screen):
             Clock.schedule_once(self.summarize_question, 4)
 
 
-    def reveal_answer(self, number:str):
+    def reveal_answer(self, number:str, add_score:bool=True):
         print("reveal_answer")
         if number in self.available_answers:
             for answer in self.answers_container.children:
                 if answer.number == int(number):
                     answer.children[2].text = answer.content
-                    answer.children[0].text = str(answer.score) 
-                    new_score = self.current_score + answer.score
-                    self.make_score(new_score)
+                    answer.children[0].text = str(answer.score)
+                    if add_score:
+                        new_score = self.current_score + answer.score
+                        self.make_score(new_score)
                     self.available_answers.remove(number)
                     #TODO play sound!
                     return
@@ -266,20 +263,20 @@ class GameRootWidget(Screen):
         pass
         #TODO muzyczka
         # #TODO podliczenie punktów
-        # teams = {"RED": self.red_score, "BLUE": self.blue_score}
-        # if self.now_answering == "RED":
-        #     self.red_score += self.current_score
-        # elif self.now_answering == "BLUE":
-        #     self.blue_score += self.current_score
         self.add_team_score(self.current_score, self.now_answering)
-        self.current_score = 0
+        self.make_score(0)
         self.next = self.unsolved_answer
 
 
     def play_big_mistake(self):
         print("play_big_mistake")
-        #TODO wyzeruj mistakes
-        #TODO
+        mistakes_dict = {"RED": self.red_mistakes, "BLUE": self.blue_mistakes}
+        team = self.now_answering
+        def play(dt):
+            mistakes_dict[team].children[0].children[0].opacity = 1.0
+            #TODO play sound!
+        self.clear_mistakes(team)
+        Clock.schedule_once(play, 1)
 
 
     def play_mistake(self):
@@ -288,9 +285,22 @@ class GameRootWidget(Screen):
 
 
     def unsolved_answer(self):
-        #TODO po jednym odkryj pozostałe odpowiedzi
         print("unsolved_answer")
+        #TODO po jednym odkryj pozostałe odpowiedzi
+        for ans in self.available_answers.reverse():
+            self.reveal_answer(ans, add_score=False)
+
         #TODO gdy wszystkie odkryte przekmiń następne pytanie
+
+
+    def clear_mistakes(self, team: str):
+        mistakes_dict = {"RED": [self.red_mistakes], "BLUE": [self.blue_mistakes], "BOTH": [self.red_mistakes, self.blue_mistakes]}
+        for panel in mistakes_dict[team]:
+            for layout in panel.children:
+                for image in layout.children:
+                    image.opacity = 0.0
+        self.n_mistakes = 0 #TODO sprawdzić to
+
 
 
 class FamilyadaApp(App):
@@ -302,10 +312,9 @@ class FamilyadaApp(App):
         return self.game_root_widget
 
     def on_start(self):
-        self.game_root_widget.gamedata_from_json('test.json')
+        self.game_root_widget.gamedata_from_json('test_manual.json')
         #TODO
-        ### TO JEST ŹLE, BO PRZED WCZYTANIEM EKRANU, PRZEROBIĆ NA PO WCZYTANIU EKRANU!
-        # self.game_root_widget.do_question()
+        # self.game_root_widget.do_question() ### TO JEST ŹLE, BO PRZED WCZYTANIEM EKRANU, PRZEROBIĆ NA PO WCZYTANIU EKRANU!
         return super().on_start()
 
 
