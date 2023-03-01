@@ -8,6 +8,7 @@ from kivy.uix.layout import Layout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.relativelayout import RelativeLayout
+from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.properties import (
     NumericProperty, ReferenceListProperty, ObjectProperty, OptionProperty, BoundedNumericProperty, StringProperty
@@ -53,7 +54,7 @@ class Answer(BoxLayout):
         self.score = kwargs['score']
 
 
-class MistakesPanel(Widget):
+class MistakesPanel(AnchorLayout):
     small_mistakes = ObjectProperty(None)
     large_mistake = ObjectProperty(None)
 
@@ -277,6 +278,7 @@ class GameRootWidget(Screen):
 
     def play_big_mistake(self):
         print("play_big_mistake")
+        #TODO wyzeruj mistakes
         #TODO
 
 

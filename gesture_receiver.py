@@ -65,7 +65,7 @@ class GestureReceiver(FloatLayout):
             for gesture in gest.gestures_dict[command]:
                 scores.append((command, g.get_score(gesture)))
         scores = sorted(scores, key=operator.itemgetter(1), reverse=True)
-        print(scores[:4])
+        print(scores[:3])
 
         if self.root_widget is not "None":
             if scores[0][1] > self.gesture_threshold:

@@ -186,14 +186,17 @@
     small_mistakes: small_mistakes_container
     large_mistake: large_mistake_container
 
-    # size_hint: 0.20, 0.45
-    size: 100,100
+    size_hint: 0.20, 0.45
+    anchor_x: 'right'
+    anchor_y: 'center'
+    padding: 0, 0, 20, 0#[padding_left, padding_top, padding_right, padding_bottom]
 
     BoxLayout:
+        # size_hint: 0.1, 0.6
         id: small_mistakes_container
         orientation: 'vertical'
-        size: self.parent.size
-        pos: self.parent.pos
+        # size: self.parent.size
+        # pos: self.parent.pos
 
         MistakeImage:
 
@@ -205,8 +208,9 @@
         id: large_mistake_container
         anchor_x: 'center'
         anchor_y: 'center'
-        size: self.parent.size
-        pos: self.parent.pos
+        size: 300, 300
+        # size: self.parent.size
+        # pos: self.parent.pos
 
         MistakeImage:
 
@@ -214,3 +218,4 @@
 <MistakeImage@Image>:
     mismap: True
     source: 'mistake.png'
+    size_hint: 1.0, 1.0
