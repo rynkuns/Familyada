@@ -63,6 +63,15 @@ class MistakesPanel(AnchorLayout):
 
 
 
+class RoundPreview(Label):
+    round_number = NumericProperty(0)
+
+    def __init__(self, round_number:int, **kwargs):
+        super(RoundPreview, self).__init__(**kwargs)
+        self.round_number = round_number
+
+
+
 class GameRootWidget(Screen):
 
     global ALL_SIGNS, NUMBERS, TEAMS, MISTAKES, MISC, DUMMY_CALLBACK
@@ -94,6 +103,7 @@ class GameRootWidget(Screen):
 
         #TODO może jakoś ogólniej zainicjować niż prepare question
         Clock.schedule_once(self.prepare_question)
+        Clock.schedule_once(self.preview_round)
 
 
     def make_score(self, value: int):
@@ -136,6 +146,14 @@ class GameRootWidget(Screen):
                 content= ans[0],
                 score= ans[1]
             ))
+
+
+    def preview_round(self, dt=None):
+        preview = RoundPreview(1)
+        self.add_widget(preview)
+        def stop(dt):
+            self.remove_widget(preview)
+        Clock.schedule_once(stop, 3.2)
 
 
     def engage_standoff(self):
@@ -220,8 +238,8 @@ class GameRootWidget(Screen):
         if command in self.available_answers:
             self.reveal_answer(command)
         elif command == "X":
+            self.play_mistake()
             self.n_mistakes += 1
-            self.play_mistake() #TODO odpal mistake
         ### Check whether to await another standard answer:
         if self.n_mistakes == 3:
             self.switch_now_answering()
@@ -259,8 +277,8 @@ class GameRootWidget(Screen):
         print("Unexpected number for reveal_answer!")
 
 
-    def summarize_question(self):
-        pass
+    def summarize_question(self, dt=None):
+        print("summarize_question")
         #TODO muzyczka
         # #TODO podliczenie punktów
         self.add_team_score(self.current_score, self.now_answering)
@@ -281,16 +299,21 @@ class GameRootWidget(Screen):
 
     def play_mistake(self):
         print("play_mistake")
-        #TODO
+        mistakes_dict = {"RED": self.red_mistakes, "BLUE": self.blue_mistakes}
+        team = self.now_answering
+        mistakes_dict[team].children[1].children[self.n_mistakes].opacity = 1.0
+        #TODO odtwórz dźwięk!
 
 
     def unsolved_answer(self):
         print("unsolved_answer")
-        #TODO po jednym odkryj pozostałe odpowiedzi
-        for ans in self.available_answers.reverse():
-            self.reveal_answer(ans, add_score=False)
-
-        #TODO gdy wszystkie odkryte przekmiń następne pytanie
+        if self.available_answers != []:
+            self.reveal_answer(self.available_answers[-1], add_score=False)
+            if self.available_answers != []:
+                self.next = DUMMY_CALLBACK #TODO 
+                #TODO ogarnij rundy jeszcze!
+            else:
+                self.next = self.unsolved_answer
 
 
     def clear_mistakes(self, team: str):
