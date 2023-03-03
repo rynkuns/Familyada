@@ -9,12 +9,13 @@ from kivy.clock import Clock
 from kivy.lang import Builder
 from kivy.graphics import *
 from kivy.properties import NumericProperty
+from kivy.core.window import Window
 
 from random import randint, choice, uniform
 
 
 N_ORBS = 13
-DURATION_RANGE = (28,55)
+DURATION_RANGE = (30,75)
 
 
 
@@ -30,9 +31,11 @@ Builder.load_string('''
     # effects: ew.HorizontalBlurEffect(size=blur_radius), ew.VerticalBlurEffect(size=blur_radius), #ew.PixelateEffect(pixel_size=10)
 
 <Orb>:
+    pos: uniform(0, Window.width), uniform(0, Window.height)
     canvas:
         Color:
-            rgba: [uniform(0.5,1.0), uniform(0.05,0.4), uniform(0.5,1.0), uniform(0.2,0.6)]
+            # rgba: [uniform(0.5,1.0), uniform(0.05,0.4), uniform(0.5,1.0), uniform(0.2,0.6)] #v1
+            rgba: [uniform(0.8,1.0), uniform(0.4,0.8), uniform(0.8,1.0), uniform(0.25,0.7)] #v2
         Ellipse:
             pos: self.pos
             size: tuple([min(Window.size)*ORB_SIZE] * 2)
@@ -53,7 +56,7 @@ class AnimatedBackground(EffectWidget):
     
 
     def generate_anim(self, target, duration_range=DURATION_RANGE):
-        xy = choice([(0-target.width, randint(0-target.height,self.height)), (self.width, randint(0-target.height,self.height)), (randint(0-target.width,self.width), 0-target.height), (randint(0-target.width,self.width), self.height)])
+        xy = choice([(0-target.width, randint(0-target.height,Window.height)), (Window.width, randint(0-target.height,Window.height)), (randint(0-target.width,Window.width), 0-target.height), (randint(0-target.width,Window.width), Window.height)])
         dur = randint(*duration_range)
         anim = Animation(pos=xy, duration=dur)
         anim.bind(on_complete= lambda anim, target: self.generate_anim(target))
@@ -65,9 +68,6 @@ class Orb(Widget):
 
     def __init__(self, **kwargs):
         super(Orb, self).__init__(**kwargs)
-        # with self.canvas:
-        #     Color(uniform(0.5,0.9), uniform(0.02,0.4), uniform(0.5,0.9), uniform(0.5,0.9))
-        #     Ellipse(pos=self.pos, size=self.size)
 
 
 

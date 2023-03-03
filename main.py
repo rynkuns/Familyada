@@ -15,12 +15,14 @@ from kivy.properties import (
 )
 from kivy.clock import Clock
 from kivy.core.audio import SoundLoader
+from kivy.core.window import Window
 
 import os
 import json
 
 from gesture_receiver import GestureReceiver
 from animated_background import AnimatedBackground
+from keyboard_receiver import KeyboardReceiver
 
 NUMBERS= ["1", "2", "3", "4", "5", "5", "6", "7", "8", "9", "0"]
 TEAMS = ["R","B"]
@@ -39,8 +41,6 @@ class StandoffMushroom(Widget):
         if self.collide_point(touch.x, touch.y):
             root = App.get_running_app().root
             if root.standoff:
-                # self.opacity -=0.5
-                # root.standoff = False
                 root.disengage_standoff(self.team)
                 return True
 
@@ -116,6 +116,7 @@ class GameRootWidget(Screen):
     def __init__(self, *args, **kwargs):
         super(GameRootWidget, self).__init__()
         self.add_widget(GestureReceiver(root_widget=self))
+        self.add_widget(KeyboardReceiver(root_widget=self))
 
         Clock.schedule_once(self.intro)
 
@@ -169,7 +170,7 @@ class GameRootWidget(Screen):
         self.sounds["before_round"].play()
         def stop(dt):
             self.remove_widget(preview)
-        Clock.schedule_once(stop, 4.15)
+        Clock.schedule_once(stop, 4.1)
 
 
     def intro(self, dt=None):
@@ -215,12 +216,25 @@ class GameRootWidget(Screen):
         if command == "X":
             self.play_big_mistake()
             self.switch_now_answering()
-        elif command in NUMBERS:
+        elif command in self.available_answers:
             self.reveal_answer(command) 
-            self.next = self.pick_team
+            if command == "1":
+                self.next = self.pick_team
+            else:
+                self.switch_now_answering()
+                self.next = self.resolve_standoff_second
         else:
             print("Unexpected command for resolve_standoff!")
 
+        
+    def resolve_standoff_second(self, command):
+        print("resolve_standoff")
+        if command == "X":
+            self.play_big_mistake()
+        elif command in self.available_answers:
+            self.reveal_answer(command)
+        self.next = self.pick_team
+                         
 
     def pick_team(self, command):
         print("pick_team")
@@ -248,7 +262,7 @@ class GameRootWidget(Screen):
         ### Check whether to await another standard answer:
         if self.n_mistakes == 3:
             self.switch_now_answering()
-            self.next = self.make_final_answer # finalna odpoweidź
+            self.next = self.make_final_answer
         elif self.available_answers == []:
             self.summarize_question()
 
@@ -340,11 +354,19 @@ class FamilyadaApp(App):
         self.game_root_widget = GameRootWidget()
         return self.game_root_widget
 
+
     def on_start(self):
         self.game_root_widget.gamedata_from_json('test_manual.json')
-        #TODO
-        # self.game_root_widget.do_question() ### TO JEST ŹLE, BO PRZED WCZYTANIEM EKRANU, PRZEROBIĆ NA PO WCZYTANIU EKRANU!
+        self.switch_fullscreen()
         return super().on_start()
+
+
+    def switch_fullscreen(self):
+        if Window.fullscreen != "auto":
+            Window.fullscreen = "auto"
+        elif Window.fullscreen == "auto":
+            Window.fullscreen = 0
+
 
 
 if __name__ == '__main__':

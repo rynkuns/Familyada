@@ -1,13 +1,11 @@
 from kivy.uix.floatlayout import FloatLayout
 from kivy.gesture import Gesture, GestureDatabase
-
-import gestures as gest
-
-#TODO usuń to
 from kivy.app import App
 from kivy.graphics import Color, Ellipse, Line
 
 import operator
+
+import gestures as gest
 
 
 def simplegesture(name, point_list):
@@ -56,8 +54,6 @@ class GestureReceiver(FloatLayout):
         # known gesture.
         g = simplegesture('', list(zip(touch.ud['line'].points[::2],
                                        touch.ud['line'].points[1::2])))
-
-        # print match scores between all known gestures
         
         #MÓJ KOD!!!!!!
         scores = []
