@@ -94,6 +94,8 @@ class GameRootWidget(Screen):
     n_turns = 0
     n_mistakes = 0
     available_answers = []
+    round = 1
+    next_round_turn = {0:1, 4:2, 6:3}
     now_answering = OptionProperty("NO", options=["RED", "BLUE", "NO"])
     current_command = OptionProperty("None", options=ALL_SIGNS)
     next = DUMMY_CALLBACK
@@ -115,9 +117,7 @@ class GameRootWidget(Screen):
         super(GameRootWidget, self).__init__()
         self.add_widget(GestureReceiver(root_widget=self))
 
-        #TODO może jakoś ogólniej zainicjować niż prepare question
-        Clock.schedule_once(self.prepare_question)
-        Clock.schedule_once(self.preview_round)
+        Clock.schedule_once(self.intro)
 
 
     def make_score(self, value: int):
@@ -147,6 +147,7 @@ class GameRootWidget(Screen):
         with open(file_path, 'r') as file:
             self.gamedata = json.load(file)
             self.n_turns = len(self.gamedata['questions'])
+        self.round = 1
 
 
     def load_question(self):
@@ -163,12 +164,19 @@ class GameRootWidget(Screen):
 
 
     def preview_round(self, dt=None):
-        preview = RoundPreview(1)
+        preview = RoundPreview(self.round)
         self.add_widget(preview)
         self.sounds["before_round"].play()
         def stop(dt):
             self.remove_widget(preview)
         Clock.schedule_once(stop, 4.15)
+
+
+    def intro(self, dt=None):
+        print("intro")
+        #TODO ekran powitalny
+        self.sounds["intro"].play()
+        self.next = self.prepare_question
 
 
     def engage_standoff(self):
@@ -177,13 +185,17 @@ class GameRootWidget(Screen):
         self.standoff_scene.opacity = 1.0
 
 
-    def prepare_question(self, dt=None):
+    def prepare_question(self, dt=None, command=None):
         print("prepare_question")
         if self.turn < self.n_turns:
+            if self.turn in self.next_round_turn:
+                self.round = self.next_round_turn[self.turn]
+                self.preview_round()
             self.now_answering = "NO"
             self.current_score = 0
             self.load_question()
             self.engage_standoff()
+            self.clear_mistakes("BOTH")
         else:
             print("No more questions left!")
 
@@ -197,21 +209,11 @@ class GameRootWidget(Screen):
         self.now_answering = team
         self.next =  self.resolve_standoff
         
-            # while no_correct_answer:
-            #     print('elo')
-            #     self.receive_command()
-            #     if self.current_command in NUMBERS:
-            #         #TODO odsłoń odpowiedź
-            #         no_correct_answer = False
-            #         #TODO wybierz team który przejmuje pytanie
-            #     elif self.current_command in MISTAKES:
-            #         #TODO odpal mistake po dobrej stronie
-            #         pass
 
     def resolve_standoff(self, command):
         print("resolve_standoff")
         if command == "X":
-            self.play_big_mistake() #TODO odpal mistake po dobrej stronie!
+            self.play_big_mistake()
             self.switch_now_answering()
         elif command in NUMBERS:
             self.reveal_answer(command) 
@@ -256,11 +258,9 @@ class GameRootWidget(Screen):
         if command in self.available_answers:
             self.reveal_answer(command)
             Clock.schedule_once(self.summarize_question, 2)
-            # self.summarize_question() #TODO za kilka sekund
         if command == "X":
-            self.play_big_mistake() #TODO odpal duży mistake
+            self.play_big_mistake()
             self.switch_now_answering()
-            # self.summarize_question() #TODO(zaplanuj na clock za kilka sekund)
             Clock.schedule_once(self.summarize_question, 4)
 
 
@@ -275,7 +275,7 @@ class GameRootWidget(Screen):
                         new_score = self.current_score + answer.score
                         self.make_score(new_score)
                     self.available_answers.remove(number)
-                    self.sounds["answer"].play() #TODO play sound!
+                    self.sounds["answer"].play()
                     return
         print("Unexpected number for reveal_answer!")
 
@@ -283,8 +283,7 @@ class GameRootWidget(Screen):
     def summarize_question(self, dt=None):
         print("summarize_question")
         #TODO muzyczka
-        # #TODO podliczenie punktów
-        self.add_team_score(self.current_score, self.now_answering)
+        self.add_team_score(self.current_score * self.round, self.now_answering)
         self.make_score(0)
         self.next = self.unsolved_answer
 
@@ -295,9 +294,9 @@ class GameRootWidget(Screen):
         team = self.now_answering
         def play(dt):
             mistakes_dict[team].children[0].children[0].opacity = 1.0
-            self.sounds["mistake"].play() #TODO play sound!
+            self.sounds["mistake"].play()
         self.clear_mistakes(team)
-        Clock.schedule_once(play, 1)
+        Clock.schedule_once(play, 0.7)
 
 
     def play_mistake(self):
@@ -305,18 +304,17 @@ class GameRootWidget(Screen):
         mistakes_dict = {"RED": self.red_mistakes, "BLUE": self.blue_mistakes}
         team = self.now_answering
         mistakes_dict[team].children[1].children[self.n_mistakes].opacity = 1.0
-        self.sounds["mistake"].play() #TODO odtwórz dźwięk!
+        self.sounds["mistake"].play()
 
 
-    def unsolved_answer(self):
+    def unsolved_answer(self, command):
         print("unsolved_answer")
         if self.available_answers != []:
             self.reveal_answer(self.available_answers[-1], add_score=False)
-            if self.available_answers != []:
-                self.next = DUMMY_CALLBACK #TODO 
-                #TODO ogarnij rundy jeszcze!
-            else:
-                self.next = self.unsolved_answer
+            if self.available_answers == []:
+                self.next = self.finish_turn
+        else:
+            self.next = self.finish_turn
 
 
     def clear_mistakes(self, team: str):
@@ -326,6 +324,11 @@ class GameRootWidget(Screen):
                 for image in layout.children:
                     image.opacity = 0.0
         self.n_mistakes = 0 #TODO sprawdzić to
+
+
+    def finish_turn(self, command):
+        self.turn += 1
+        self.prepare_question()
 
 
 
