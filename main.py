@@ -14,11 +14,13 @@ from kivy.properties import (
     NumericProperty, ReferenceListProperty, ObjectProperty, OptionProperty, BoundedNumericProperty, StringProperty
 )
 from kivy.clock import Clock
+from kivy.core.audio import SoundLoader
 
-import time
+import os
 import json
 
 from gesture_receiver import GestureReceiver
+from animated_background import AnimatedBackground
 
 NUMBERS= ["1", "2", "3", "4", "5", "5", "6", "7", "8", "9", "0"]
 TEAMS = ["R","B"]
@@ -95,6 +97,18 @@ class GameRootWidget(Screen):
     now_answering = OptionProperty("NO", options=["RED", "BLUE", "NO"])
     current_command = OptionProperty("None", options=ALL_SIGNS)
     next = DUMMY_CALLBACK
+    
+    make_sound = lambda file: SoundLoader.load(os.path.join("audio", file))
+    sounds = {
+        "mistake": make_sound("mistake.mp3"),
+        "answer": make_sound("answer.mp3"),
+        "intro": make_sound("intro.mp3"),
+        "repeat_final": make_sound("repeat_final.mp3"),
+        "timeup_final": make_sound("timeup_final.mp3"),
+        "before_round": make_sound("before_round.mp3"),
+        "before_final": make_sound("before_final.mp3"),
+        "between_final": make_sound("after_1_final_roound.mp3")
+    }
 
 
     def __init__(self, *args, **kwargs):
@@ -151,27 +165,16 @@ class GameRootWidget(Screen):
     def preview_round(self, dt=None):
         preview = RoundPreview(1)
         self.add_widget(preview)
+        self.sounds["before_round"].play()
         def stop(dt):
             self.remove_widget(preview)
-        Clock.schedule_once(stop, 3.2)
+        Clock.schedule_once(stop, 4.15)
 
 
     def engage_standoff(self):
         print("engage_standoff")
         self.standoff = True
         self.standoff_scene.opacity = 1.0
-
-
-    # def receive_command(self, options=ALL_SIGNS):
-    #     self.current_command = "None"
-    #     print(options)
-    #     while True: #TODO tu jest zjebane
-    #         if self.current_command is not "None":
-    #             if self.current_command not in options:
-    #                 print("Unexpected command!")
-    #                 self.current_command = "None"
-    #             else:
-    #                 return self.current_command
 
 
     def prepare_question(self, dt=None):
@@ -272,7 +275,7 @@ class GameRootWidget(Screen):
                         new_score = self.current_score + answer.score
                         self.make_score(new_score)
                     self.available_answers.remove(number)
-                    #TODO play sound!
+                    self.sounds["answer"].play() #TODO play sound!
                     return
         print("Unexpected number for reveal_answer!")
 
@@ -292,7 +295,7 @@ class GameRootWidget(Screen):
         team = self.now_answering
         def play(dt):
             mistakes_dict[team].children[0].children[0].opacity = 1.0
-            #TODO play sound!
+            self.sounds["mistake"].play() #TODO play sound!
         self.clear_mistakes(team)
         Clock.schedule_once(play, 1)
 
@@ -302,7 +305,7 @@ class GameRootWidget(Screen):
         mistakes_dict = {"RED": self.red_mistakes, "BLUE": self.blue_mistakes}
         team = self.now_answering
         mistakes_dict[team].children[1].children[self.n_mistakes].opacity = 1.0
-        #TODO odtwórz dźwięk!
+        self.sounds["mistake"].play() #TODO odtwórz dźwięk!
 
 
     def unsolved_answer(self):
