@@ -6,12 +6,17 @@
     standoff_scene: standoff_scene
     red_mistakes: red_mistakes
     blue_mistakes: blue_mistakes
+    game_board: game_board
+    final_round_panel: final_round_panel
+    timer: timer
     
 
     #:import Window kivy.core.window.Window
     #:set text_color [222/255, 222/255, 89/255] #'DEDE59'
     #:set game_font 'familiada.ttf'
     #:set display_font 'clap_hand.ttf'
+    #:set current_score_size (0.18, 0.18)
+    
 
     canvas:
         Rectangle:
@@ -61,15 +66,36 @@
             MistakesPanel:
                 id: blue_mistakes
 
+        BoxLayout:
+            id: final_round_panel
+            orientation: 'horizontal'
+            spacing: 100
+            size_hint: 0.64, 0.6
+            opacity: 0.05
+
+            BoxLayout:
+                orientation: 'vertical'
+                Answer_f:
+                Answer_f:
+                Answer_f:
+                Answer_f:
+                Answer_f:
+
+            BoxLayout:
+                orientation: 'vertical'
+                Answer_f:
+                Answer_f:
+                Answer_f:
+                Answer_f:
+                Answer_f:
+
     AnchorLayout:
         anchor_x: 'center'
         anchor_y: 'top'
-        #:set current_score_size (0.18, 0.18)
 
         Image:
             source: 'current_score.png'
             mipmap: True
-            # size: 100, 100
             size_hint: current_score_size
 
         Label:
@@ -88,15 +114,31 @@
         Image:
             source: 'left_score.png'
             mipmap: True
-            size_hint: current_score_size
+            size_hint: current_score_size            
 
         Label:
             id: team_red
-            text: 'RED'
+            text: '000'
             size_hint: current_score_size
             font_size: min(self.size) / 2.25
             font_name: game_font
             color: text_color
+
+        Label:
+            text: 'Druty'
+            font_name: display_font
+            font_size: min(self.size) / 2
+            size_hint: (0.11, 0.08)
+
+            # RelativeLayout:
+            #     pos: 60, -20
+            #     size_hint: current_score_size
+
+            #     Label:
+            #         text: 'red team'
+            #         font_name: display_font
+            #         font_size: min(self.size) / 3  
+
 
     AnchorLayout:
         anchor_x: 'right'
@@ -110,11 +152,17 @@
 
         Label:
             id: team_blue
-            text: 'BLU'
+            text: '000'
             size_hint: current_score_size
             font_size: min(self.size) / 2.25
             font_name: game_font
             color: text_color
+
+        Label:
+            text: 'Drwale'
+            font_name: display_font
+            font_size: min(self.size) / 2
+            size_hint: (0.11, 0.08)
 
 
     AnchorLayout:
@@ -131,6 +179,16 @@
             #         size: self.size
             #         source: 'game_background.png'
 
+
+    AnchorLayout:
+        anchor_x: 'right'
+        anchor_y: 'center'
+
+        GameLabel:
+            id: timer
+            text: '88'
+            size_hint: 0.35, 0.5
+            font_size: min(Window.size) *0.15
 
     BoxLayout:
         orientation: 'horizontal'
@@ -198,6 +256,26 @@
         font_size: min(Window.size)/30
 
 
+<Answer_f>:
+    orientation: 'horizontal'
+    spacing: 1
+
+    GameLabel:
+        size_hint: None, 1
+        width: self.texture_size[0]
+        text: '..........'
+        font_size: min(Window.size)/30
+
+    Widget:
+        size_hint: 1, 1
+
+    GameLabel:
+        size_hint: None, 1
+        width: self.texture_size[0]
+        text: '__'
+        font_size: min(Window.size)/30
+
+
 <GameLabel@Label>:
     font_name: game_font
     color: text_color
@@ -253,7 +331,22 @@
     canvas:
         Color:
             rgba: [0.55, 0.25, 0.55, 0.5]
+        Rectangle:
+            pos: self.pos
+            size: self.size
 
+
+<OutroPreview>:
+    size_hint: 1.0, 1.0
+    text: 'Dziękujemy i zapraszamy ponownie'
+    opacity: 0.99
+    # color: text_color
+    font_size: min(self.size) / 8
+    font_name: display_font
+
+    canvas:
+        Color:
+            rgba: [0.75, 0.55, 0.75, 0.3]
         Rectangle:
             pos: self.pos
             size: self.size

@@ -27,7 +27,16 @@ class KeyboardReceiver(FloatLayout):
 
 
     def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
+        # print('The key', keycode, 'have been pressed')
+        # print(' - text is %r' % text)
+        # print(' - modifiers are %r' % modifiers)
+        print(keycode[1].upper())
+
         self.game_root.next(keycode[1].upper())
+
+        teams = {'r': "RED", 'b': "BLUE"}
+        if self.game_root.standoff and keycode[1] in teams:
+            self.game_root.disengage_standoff(teams[keycode[1]])
 
         # Return True to accept the key. Otherwise, it will be used by
         # the system.
