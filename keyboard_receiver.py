@@ -33,6 +33,9 @@ class KeyboardReceiver(FloatLayout):
         print(keycode[1].upper())
 
         self.game_root.next(keycode[1].upper())
+        if keycode[1] == "F11":
+            self.game_root.switch_fullscreen()
+            
 
         teams = {'r': "RED", 'b': "BLUE"}
         if self.game_root.standoff and keycode[1] in teams:

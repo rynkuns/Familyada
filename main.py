@@ -142,7 +142,8 @@ class GameRootWidget(Screen):
         self.sounds["before_round"].volume = 0.3
 
         # Clock.schedule_once(self.intro) #TODO
-        Clock.schedule_once(self.prepare_final) #TODO
+        # Clock.schedule_once(self.prepare_final) #TODO
+        self.next = self.intro
 
 
     def make_score(self, value: int):
@@ -209,9 +210,14 @@ class GameRootWidget(Screen):
         print("intro")
         #TODO ekran powitalny
         self.sounds["intro"].play()
+        self.next = DUMMY_CALLBACK
         def next(dt):
             self.next = self.prepare_question
         Clock.schedule_once(next, 20)
+        ### Clear UI
+        self.clear_mistakes("BOTH")
+        self.timer.text = " "
+        self.final_round_panel.opacity = 0.0
 
 
     def engage_standoff(self):
@@ -232,9 +238,6 @@ class GameRootWidget(Screen):
             self.team_blue.text = str(self.blue_score)
             self.load_question()
             self.engage_standoff()
-            self.clear_mistakes("BOTH")
-            self.timer.text = " "
-            self.final_round_panel.opacity = 0.0
             self.next = DUMMY_CALLBACK
         else:
             print("No more questions left!")
@@ -510,7 +513,7 @@ class FamilyadaApp(App):
 
     def on_start(self):
         self.game_root_widget.gamedata_from_json('test_manual.json')
-        # self.switch_fullscreen() #TODO
+        self.switch_fullscreen() #TODO
         return super().on_start()
 
 
