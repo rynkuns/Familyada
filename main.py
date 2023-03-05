@@ -112,7 +112,7 @@ class GameRootWidget(Screen):
     n_mistakes = 0
     available_answers = []
     round = 1
-    next_round_turn = {0:1, 4:2, 6:3}
+    next_round_turn = {0:1, 9:2, 13:3}
     now_answering = OptionProperty("NO", options=["RED", "BLUE", "NO"])
     current_command = OptionProperty("None", options=ALL_SIGNS)
     next = DUMMY_CALLBACK
@@ -140,8 +140,8 @@ class GameRootWidget(Screen):
         self.bind(now_answering=self.answering_visual)
         self.sounds["before_round"].volume = 0.3
 
-        Clock.schedule_once(self.intro) #TODO
-        # Clock.schedule_once(self.prepare_final) #TODO
+        # Clock.schedule_once(self.intro) #TODO
+        Clock.schedule_once(self.prepare_final) #TODO
 
 
     def make_score(self, value: int):
@@ -388,6 +388,7 @@ class GameRootWidget(Screen):
     def prepare_final(self, dt=None):
         print("prepare_final")
         self.answers_container.clear_widgets()
+        self.clear_mistakes("BOTH")
         self.sounds["before_final"].play()
         self.final_round_panel.opacity = 1.0
         self.next = self.time_trial
@@ -463,7 +464,7 @@ class GameRootWidget(Screen):
                 self.next = self.type_answer_f
         elif command == "BACKSPACE":
             self.typing_buffer = ""
-        elif len(self.typing_buffer) < 2:
+        elif len(self.typing_buffer) < 2 and command in NUMBERS:
             self.typing_buffer += command
 
     
@@ -487,7 +488,7 @@ class GameRootWidget(Screen):
         if self.current_score >= 200:
             self.add_widget(OutroPreview("GG WP"))
         elif self.current_score < 200:
-             self.add_widget(OutroPreview("Wielkie bylo staranie,\na jednak wyszlo zesranie."))
+             self.add_widget(OutroPreview("Wielkie bylo staranie,\njednak wyszlo zesranie."))
         self.sounds["before_final"].play()
         #TODO
 
