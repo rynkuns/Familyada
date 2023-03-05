@@ -129,6 +129,7 @@ class GameRootWidget(Screen):
         "timeup_final": make_sound("timeup_final.mp3"),
         "before_round": make_sound("before_round.mp3"),
         "before_final": make_sound("before_final.mp3"),
+        "add_answer_f": make_sound("chimes.mp3"),
         "between_final": make_sound("after_1_final_round.mp3")
     } #TODO volume!
 
@@ -220,13 +221,15 @@ class GameRootWidget(Screen):
 
 
     def prepare_question(self, dt=None, command=None):
-        print("prepare_question")
+        print("prepare_question", self.turn, "red:", self.red_score, "blue:", self.blue_score)
         if self.turn < self.n_turns:
             if self.turn in self.next_round_turn:
                 self.round = self.next_round_turn[self.turn]
                 self.preview_round()
             self.now_answering = "NO"
-            self.current_score = 0
+            self.make_score(0)
+            self.team_red.text = str(self.red_score)
+            self.team_blue.text = str(self.blue_score)
             self.load_question()
             self.engage_standoff()
             self.clear_mistakes("BOTH")
@@ -452,6 +455,7 @@ class GameRootWidget(Screen):
 
     def type_score_f(self, command):
         if command == "ENTER":
+            if self.typing_buffer in ["", " ", "  "]: return
             self.add_score_f()
             self.typing_buffer = ""
             self.answer_finalist +=1
@@ -470,7 +474,7 @@ class GameRootWidget(Screen):
     
     def add_answer_f(self):
         self.final_round_panel.children[1-self.finalist].children[4-self.answer_finalist].children[2].text = self.typing_buffer
-        #TODO dodaj dzwonki
+        self.sounds["add_answer_f"].play()
 
 
     def add_score_f(self):
@@ -501,6 +505,7 @@ class FamilyadaApp(App):
     def build(self):
         self.game_root_widget = GameRootWidget()
         return self.game_root_widget
+        # return OutroPreview("Test")
 
 
     def on_start(self):
