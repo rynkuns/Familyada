@@ -233,6 +233,7 @@ class GameRootWidget(Screen):
                 self.round = self.next_round_turn[self.turn]
                 self.preview_round()
             self.now_answering = "NO"
+            self.clear_mistakes("BOTH")
             self.make_score(0)
             self.team_red.text = str(self.red_score)
             self.team_blue.text = str(self.blue_score)
@@ -513,7 +514,7 @@ class FamilyadaApp(App):
 
     def on_start(self):
         self.game_root_widget.gamedata_from_json('test_manual.json')
-        self.switch_fullscreen() #TODO
+        # self.switch_fullscreen() #TODO
         return super().on_start()
 
 

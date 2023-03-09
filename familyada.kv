@@ -42,7 +42,8 @@
         BoxLayout:
             orientation: 'horizontal'
             spacing: 10
-            size_hint: 0.64, 0.7
+            # size_hint: 0.64, 0.7
+            size_hint: 0.45, 0.7
 
             MistakesPanel:
                 id: red_mistakes
@@ -70,7 +71,8 @@
             id: final_round_panel
             orientation: 'horizontal'
             spacing: 100
-            size_hint: 0.64, 0.6
+            # size_hint: 0.64, 0.7
+            size_hint: 0.45, 0.7
             opacity: 0.05
 
             BoxLayout:
@@ -125,7 +127,7 @@
             color: text_color
 
         Label:
-            text: 'Druty'
+            text: 'Pipipipistolety'
             font_name: display_font
             font_size: min(self.size) / 2
             size_hint: (0.11, 0.08)
@@ -159,7 +161,7 @@
             color: text_color
 
         Label:
-            text: 'Drwale'
+            text: 'Jagodzianki$$$'
             font_name: display_font
             font_size: min(self.size) / 2
             size_hint: (0.11, 0.08)
@@ -187,7 +189,7 @@
         GameLabel:
             id: timer
             text: '88'
-            size_hint: 0.35, 0.5
+            size_hint: 0.55, 0.5
             font_size: min(Window.size) *0.15
 
     BoxLayout:
